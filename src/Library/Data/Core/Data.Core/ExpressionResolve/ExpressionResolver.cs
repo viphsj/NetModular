@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Text;
 using Nm.Lib.Data.Abstractions;
 using Nm.Lib.Data.Abstractions.Enums;
-using Nm.Lib.Data.Core.Internal;
 using Nm.Lib.Data.Core.SqlQueryable.Internal;
+using Nm.Lib.Utils.Core.Extensions;
 
 namespace Nm.Lib.Data.Core.ExpressionResolve
 {
@@ -17,7 +17,7 @@ namespace Nm.Lib.Data.Core.ExpressionResolve
         private readonly ISqlAdapter _sqlAdapter;
         private readonly QueryBody _queryBody;
         private LambdaExpression _fullExpression;
-        private QueryParameters _parameters;
+        private IQueryParameters _parameters;
         private StringBuilder _sqlBuilder;
 
         public ExpressionResolver(ISqlAdapter sqlAdapter, QueryBody queryBody)
@@ -26,7 +26,7 @@ namespace Nm.Lib.Data.Core.ExpressionResolve
             _queryBody = queryBody;
         }
 
-        public string Resolve(LambdaExpression expression, QueryParameters parameters)
+        public string Resolve(LambdaExpression expression, IQueryParameters parameters)
         {
             if (expression == null)
                 return string.Empty;
@@ -36,13 +36,6 @@ namespace Nm.Lib.Data.Core.ExpressionResolve
             _sqlBuilder = new StringBuilder();
 
             Resolve(_fullExpression);
-
-            //删除多余的括号
-            if (_sqlBuilder.Length > 1 && _sqlBuilder[0] == '(' && _sqlBuilder[_sqlBuilder.Length - 1] == ')')
-            {
-                _sqlBuilder.Remove(0, 1);
-                _sqlBuilder.Remove(_sqlBuilder.Length - 1, 1);
-            }
 
             return _sqlBuilder.ToString();
         }
@@ -373,105 +366,289 @@ namespace Nm.Lib.Data.Core.ExpressionResolve
 
                     #region ==解析集合==
 
-                    if (objExp.Expression is ConstantExpression constant)
+                    var value = DynamicInvoke(objExp);
+                    var valueType = objExp.Type.GetGenericArguments()[0];
+                    var isValueType = false;
+                    var list = new List<string>();
+                    if (valueType.IsEnum)
                     {
-                        var value = ((FieldInfo)objExp.Member).GetValue(constant.Value);
-                        var valueType = objExp.Type.GetGenericArguments()[0];
+                        isValueType = true;
+                        var valueList = (IEnumerable)value;
+                        if (valueList != null)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(Enum.Parse(valueType, c.ToString()).ToInt().ToString());
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(string))
+                    {
+                        list = value as List<string>;
+                    }
+                    else if (valueType == typeof(Guid))
+                    {
+                        if (value is List<Guid> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString());
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(char))
+                    {
+                        if (value is List<char> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString());
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(DateTime))
+                    {
+                        if (value is List<DateTime> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString("yyyy-MM-dd HH:mm:ss"));
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(int))
+                    {
+                        isValueType = true;
+                        if (value is List<int> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString());
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(long))
+                    {
+                        isValueType = true;
+                        if (value is List<long> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString());
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(double))
+                    {
+                        isValueType = true;
+                        if (value is List<double> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString(CultureInfo.InvariantCulture));
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(float))
+                    {
+                        isValueType = true;
+                        if (value is List<float> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString(CultureInfo.InvariantCulture));
+                            }
+                        }
+                    }
+                    else if (valueType == typeof(decimal))
+                    {
+                        isValueType = true;
+                        if (value is List<decimal> valueList)
+                        {
+                            foreach (var c in valueList)
+                            {
+                                list.Add(c.ToString(CultureInfo.InvariantCulture));
+                            }
+                        }
+                    }
+
+                    if (list == null)
+                        return;
+
+                    //值类型不带引号
+                    if (isValueType)
+                    {
+                        for (var i = 0; i < list.Count; i++)
+                        {
+                            _sqlBuilder.AppendFormat("{0}", list[i]);
+                            if (i != list.Count - 1)
+                            {
+                                _sqlBuilder.Append(",");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (var i = 0; i < list.Count; i++)
+                        {
+                            _sqlBuilder.AppendFormat("'{0}'", list[i].Replace("'", "''"));
+                            if (i != list.Count - 1)
+                            {
+                                _sqlBuilder.Append(",");
+                            }
+                        }
+                    }
+
+                    #endregion
+
+                    _sqlBuilder.Append(") ");
+                }
+            }
+            else if (exp.Arguments[0].Type.IsArray && exp.Arguments[1] is MemberExpression argExp && argExp.Expression.NodeType == ExpressionType.Parameter)
+            {
+                _sqlBuilder.Append(_queryBody.GetColumnName(argExp, _fullExpression));
+                _sqlBuilder.Append(" IN (");
+
+                #region ==解析数组==
+
+                if (exp.Arguments[0] is MemberExpression member)
+                {
+                    var valueType = member.Type.GetElementType();
+                    if (valueType != null)
+                    {
+                        var value = DynamicInvoke(member);
+                        //是否是值类型
                         var isValueType = false;
                         var list = new List<string>();
-                        if (valueType == typeof(string))
+                        if (valueType.IsEnum)
                         {
-                            list = value as List<string>;
-                        }
-                        else if (valueType == typeof(Guid))
-                        {
-                            if (value is List<Guid> valueList)
+                            isValueType = true;
+                            var valueList = (IEnumerable)value;
+                            if (valueList != null)
                             {
                                 foreach (var c in valueList)
                                 {
-                                    list.Add(c.ToString());
+                                    list.Add(Enum.Parse(valueType, c.ToString()).ToInt().ToString());
+                                }
+                            }
+                        }
+                        else if (valueType == typeof(string))
+                        {
+                            if (value is string[] valueList)
+                            {
+                                foreach (var val in valueList)
+                                {
+                                    list.Add(val);
+                                }
+                            }
+                        }
+                        else if (valueType == typeof(Guid))
+                        {
+                            if (value is Guid[] valueList)
+                            {
+                                foreach (var val in valueList)
+                                {
+                                    list.Add(val.ToString());
                                 }
                             }
                         }
                         else if (valueType == typeof(char))
                         {
-                            if (value is List<char> valueList)
+                            if (value is char[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString());
+                                    list.Add(val.ToString());
                                 }
                             }
                         }
                         else if (valueType == typeof(DateTime))
                         {
-                            if (value is List<DateTime> valueList)
+                            if (value is DateTime[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString("yyyy-MM-dd HH:mm:ss"));
+                                    list.Add(val.ToString("yyyy-MM-dd HH:mm:ss"));
+                                }
+                            }
+                        }
+                        else if (valueType == typeof(byte))
+                        {
+                            isValueType = true;
+                            if (value is byte[] valueList)
+                            {
+                                foreach (var val in valueList)
+                                {
+                                    list.Add(val.ToString());
                                 }
                             }
                         }
                         else if (valueType == typeof(int))
                         {
                             isValueType = true;
-                            if (value is List<int> valueList)
+                            if (value is int[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString());
+                                    list.Add(val.ToString());
                                 }
                             }
                         }
                         else if (valueType == typeof(long))
                         {
                             isValueType = true;
-                            if (value is List<long> valueList)
+                            if (value is long[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString());
+                                    list.Add(val.ToString());
                                 }
                             }
                         }
                         else if (valueType == typeof(double))
                         {
                             isValueType = true;
-                            if (value is List<double> valueList)
+                            if (value is double[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString(CultureInfo.InvariantCulture));
+                                    list.Add(val.ToString(CultureInfo.InvariantCulture));
+                                }
+                            }
+                        }
+                        else if (valueType == typeof(short))
+                        {
+                            isValueType = true;
+                            if (value is short[] valueList)
+                            {
+                                foreach (var val in valueList)
+                                {
+                                    list.Add(val.ToString());
                                 }
                             }
                         }
                         else if (valueType == typeof(float))
                         {
                             isValueType = true;
-                            if (value is List<float> valueList)
+                            if (value is float[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString(CultureInfo.InvariantCulture));
+                                    list.Add(val.ToString(CultureInfo.InvariantCulture));
                                 }
                             }
                         }
                         else if (valueType == typeof(decimal))
                         {
                             isValueType = true;
-                            if (value is List<decimal> valueList)
+                            if (value is decimal[] valueList)
                             {
-                                foreach (var c in valueList)
+                                foreach (var val in valueList)
                                 {
-                                    list.Add(c.ToString(CultureInfo.InvariantCulture));
+                                    list.Add(val.ToString(CultureInfo.InvariantCulture));
                                 }
                             }
                         }
-
-                        if (list == null)
-                            return;
-
 
                         //值类型不带引号
                         if (isValueType)
@@ -495,148 +672,6 @@ namespace Nm.Lib.Data.Core.ExpressionResolve
                                     _sqlBuilder.Append(",");
                                 }
                             }
-                        }
-                    }
-
-                    #endregion
-
-                    _sqlBuilder.Append(") ");
-                }
-            }
-            else if (exp.Arguments[0].Type.IsArray && exp.Arguments[1] is MemberExpression argExp && argExp.Expression.NodeType == ExpressionType.Parameter)
-            {
-                _sqlBuilder.Append(_queryBody.GetColumnName(argExp, _fullExpression));
-                _sqlBuilder.Append(" IN (");
-
-                #region ==解析数组==
-
-                var member = exp.Arguments[0] as MemberExpression;
-                var constant = member.Expression as ConstantExpression;
-                var value = ((FieldInfo)member.Member).GetValue(constant.Value);
-                var valueType = member.Type.FullName;
-                var isValueType = false;
-                string[] list = null;
-                if (valueType == "System.String[]")
-                {
-                    list = value as string[];
-                }
-                else if (valueType == "System.Guid[]")
-                {
-                    if (value is Guid[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString();
-                        }
-                    }
-                }
-                else if (valueType == "System.Char[]")
-                {
-                    if (value is char[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString();
-                        }
-                    }
-                }
-                else if (valueType == "System.Datetime[]")
-                {
-                    if (value is DateTime[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString("yyyy-MM-dd HH:mm:ss");
-                        }
-                    }
-                }
-                else if (valueType == "System.Int32[]")
-                {
-                    isValueType = true;
-                    if (value is int[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString();
-                        }
-                    }
-                }
-                else if (valueType == "System.Int64[]")
-                {
-                    isValueType = true;
-                    if (value is long[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString();
-                        }
-                    }
-                }
-                else if (valueType == "System.Double[]")
-                {
-                    isValueType = true;
-                    if (value is double[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString(CultureInfo.InvariantCulture);
-                        }
-                    }
-                }
-                else if (valueType == "System.Single[]")
-                {
-                    isValueType = true;
-                    if (value is float[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString(CultureInfo.InvariantCulture);
-                        }
-                    }
-                }
-                else if (valueType == "System.Decimal[]")
-                {
-                    isValueType = true;
-                    if (value is decimal[] valueList)
-                    {
-                        list = new string[valueList.Length];
-                        for (var i = 0; i < valueList.Length; i++)
-                        {
-                            list[i] = valueList[i].ToString(CultureInfo.InvariantCulture);
-                        }
-                    }
-                }
-
-                if (list == null)
-                    return;
-
-                //值类型不带引号
-                if (isValueType)
-                {
-                    for (var i = 0; i < list.Length; i++)
-                    {
-                        _sqlBuilder.AppendFormat("{0}", list[i]);
-                        if (i != list.Length - 1)
-                        {
-                            _sqlBuilder.Append(",");
-                        }
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < list.Length; i++)
-                    {
-                        _sqlBuilder.AppendFormat("'{0}'", list[i].Replace("'", "''"));
-                        if (i != list.Length - 1)
-                        {
-                            _sqlBuilder.Append(",");
                         }
                     }
                 }
@@ -709,7 +744,6 @@ namespace Nm.Lib.Data.Core.ExpressionResolve
                 _sqlBuilder.AppendFormat("{0}({1})", funcName, colName);
             }
         }
-
 
         #endregion
 

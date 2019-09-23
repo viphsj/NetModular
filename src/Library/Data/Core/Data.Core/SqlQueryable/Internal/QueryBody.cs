@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using Nm.Lib.Data.Abstractions;
 using Nm.Lib.Data.Abstractions.Enums;
 using Nm.Lib.Data.Abstractions.Pagination;
-using Nm.Lib.Data.Core.Internal;
+using Nm.Lib.Utils.Core;
+using Nm.Lib.Utils.Core.Extensions;
 
 namespace Nm.Lib.Data.Core.SqlQueryable.Internal
 {
@@ -22,6 +24,11 @@ namespace Nm.Lib.Data.Core.SqlQueryable.Internal
         }
 
         #region ==属性==
+
+        /// <summary>
+        /// 事务
+        /// </summary>
+        public IDbTransaction Transaction { get; private set; }
 
         public Type WhereDelegateType { get; set; }
 
@@ -90,9 +97,19 @@ namespace Nm.Lib.Data.Core.SqlQueryable.Internal
         /// </summary>
         public int Take { get; set; }
 
+        /// <summary>
+        /// 过滤已删除的
+        /// </summary>
+        public bool FilterDeleted { get; set; } = true;
+
         #endregion
 
         #region ==方法==
+
+        public void UseTran(IDbTransaction transaction)
+        {
+            Transaction = transaction;
+        }
 
         public void SetWhere(LambdaExpression whereExpression)
         {
@@ -127,43 +144,13 @@ namespace Nm.Lib.Data.Core.SqlQueryable.Internal
                     //方法
                     if (arg is MethodCallExpression methodCallExp)
                     {
-                        var methodName = methodCallExp.Method.Name;
-                        if (methodName.Equals("Substring"))
-                        {
-                            SetOrderByForSubstring(methodCallExp, expression, sortType);
-                            continue;
-                        }
-
-                        if (methodName.Equals("Count"))
-                        {
-                            Sorts.Add(new Sort("COUNT(0)", sortType));
-                            continue;
-                        }
-
-                        if (methodName.Equals("Sum"))
-                        {
-                            ResolveSelectForFunc(methodCallExp, "SUM");
-                            continue;
-                        }
-
-                        if (methodName.Equals("Avg"))
-                        {
-                            ResolveSelectForFunc(methodCallExp, "AVG");
-                            continue;
-                        }
-
-                        if (methodName.Equals("Max"))
-                        {
-                            ResolveSelectForFunc(methodCallExp, "MAX");
-                            continue;
-                        }
-
-                        if (methodName.Equals("Min"))
-                        {
-                            ResolveSelectForFunc(methodCallExp, "MIN");
-                        }
+                        SetOrderByMethod(expression, methodCallExp, sortType);
                     }
                 }
+            }
+            else if (IsGroupBy && expression.Body.NodeType == ExpressionType.Call && expression.Body is MethodCallExpression callExpression)
+            {
+                SetOrderByMethod(expression, callExpression, sortType);
             }
         }
 
@@ -200,6 +187,45 @@ namespace Nm.Lib.Data.Core.SqlQueryable.Internal
             {
                 var colName = GetColumnName(memberExp, fullExpression);
                 Sorts.Add(new Sort(colName, sortType));
+            }
+        }
+
+        private void SetOrderByMethod(LambdaExpression expression, MethodCallExpression methodCallExp, SortType sortType = SortType.Asc)
+        {
+            var methodName = methodCallExp.Method.Name;
+            if (methodName.Equals("Substring"))
+            {
+                SetOrderByForSubstring(methodCallExp, expression, sortType);
+                return;
+            }
+
+            if (methodName.Equals("Count"))
+            {
+                Sorts.Add(new Sort("COUNT(0)", sortType));
+                return;
+            }
+
+            if (methodName.Equals("Sum"))
+            {
+                ResolveSelectForFunc(methodCallExp, "SUM");
+                return;
+            }
+
+            if (methodName.Equals("Avg"))
+            {
+                ResolveSelectForFunc(methodCallExp, "AVG");
+                return;
+            }
+
+            if (methodName.Equals("Max"))
+            {
+                ResolveSelectForFunc(methodCallExp, "MAX");
+                return;
+            }
+
+            if (methodName.Equals("Min"))
+            {
+                ResolveSelectForFunc(methodCallExp, "MIN");
             }
         }
 

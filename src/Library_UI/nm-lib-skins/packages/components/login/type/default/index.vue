@@ -1,24 +1,32 @@
 <template>
   <div class="nm-login nm-login-container default">
-    <div class="nm-login-bg"/>
+    <div class="nm-login-bg" />
     <div class="nm-login-box">
       <div class="nm-login-content">
         <div class="nm-login-logo">
-          <img class="nm-login-logo-img" :src="logo">
+          <img class="nm-login-logo-img" :src="logo" />
           <h1 class="nm-login-logo-title">{{title}}</h1>
         </div>
         <el-form ref="form" :model="form" :rules="rules">
+          <el-form-item v-if="options.accountTypeOptions" prop="accountType">
+            <el-select v-model="form.accountType" placeholder="账户类型">
+              <template v-slot:prefix>
+                <nm-icon name="project" />
+              </template>
+              <el-option v-for="item in options.accountTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
           <el-form-item prop="userName">
             <el-input v-model="form.userName" placeholder="用户名">
               <template v-slot:prefix>
-                <nm-icon name="user"></nm-icon>
+                <nm-icon name="user" />
               </template>
             </el-input>
           </el-form-item>
           <el-form-item prop="password">
             <el-input type="password" v-model="form.password" autocomplete="off" placeholder="密码">
               <template v-slot:prefix>
-                <nm-icon name="password"></nm-icon>
+                <nm-icon name="password" />
               </template>
             </el-input>
           </el-form-item>
@@ -33,7 +41,7 @@
               </el-form-item>
             </div>
             <div class="verifycode-img">
-              <img title="点击刷新" :src="verifyCodeUrl" @click="refreshVierifyCode">
+              <img title="点击刷新" :src="verifyCodeUrl" @click="refreshVierifyCode" />
             </div>
           </div>
           <el-form-item style="text-align:right;">
@@ -46,6 +54,17 @@
 </template>
 <script>
 import { mapState } from 'vuex'
+// const options = {
+//   // 账户类型选择
+//   accountTypeOptions: Array,
+//   // 登录涉及到的操作
+//   actions: {
+//     // 获取验证码方法
+//     getVerifyCode: null,
+//     // 登录方法
+//     login: null
+//   }
+// }
 export default {
   data() {
     const _this = this
@@ -55,7 +74,8 @@ export default {
         userName: '',
         password: '',
         code: '',
-        pictureId: ''
+        pictureId: '',
+        accountType: 0
       },
       rules: {
         userName: [{
@@ -68,29 +88,31 @@ export default {
           message: '请输入密码',
           trigger: 'blur'
         }],
-        code: [{          validator(rule, value, callback) {
-            if (_this.loginVerifyCode && value === '') {
-              callback(new Error('请输入验证码'))
-            } else {
-              callback()
-            }
-          },
-          trigger: 'blur'
+        code: [{ validator(rule, value, callback) {
+          if (_this.loginVerifyCode && value === '') {
+            callback(new Error('请输入验证码'))
+          } else {
+            callback()
+          }
+        },
+        trigger: 'blur'
         }]
       },
       loading: false
     }
   },
   props: {
-    actions: Object
+    options: {
+      type: Object
+    }
   },
   computed: {
     ...mapState('app/system', ['title', 'logo', 'loginVerifyCode']),
     getVerifyCode() {
-      return this.actions.getVerifyCode
+      return this.options.actions.getVerifyCode
     },
     login() {
-      return this.actions.login
+      return this.options.actions.login
     }
   },
   mounted() {
@@ -160,9 +182,11 @@ export default {
   }
 
   .nm-login-box {
-    margin: 0 auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -160px 0 0 -190px;
     padding: 5px 15px;
-    margin-top: 10%;
     border-radius: 5px;
     text-align: center;
     width: 350px;
@@ -201,14 +225,13 @@ export default {
 
     &-img {
       position: absolute;
-      left: 5px;
-      top: 20px;
+      left: 2px;
+      top: 14px;
       padding: 5px;
       -webkit-box-sizing: border-box;
       box-sizing: border-box;
-      height: 61px;
+      height: 75px;
       float: left;
-      background: #409eff;
     }
 
     &-title {
@@ -222,7 +245,6 @@ export default {
   }
 
   .nm-icon {
-    padding-top: 5px;
     font-size: 2em;
   }
   .el-input__inner {

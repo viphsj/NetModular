@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Text;
 using Nm.Lib.Data.Abstractions.Enums;
+using Nm.Lib.Data.Abstractions.Options;
 using Nm.Lib.Data.Core;
-using Nm.Lib.Data.Core.Internal;
+using Nm.Lib.Utils.Core.Helpers;
 
 namespace Nm.Lib.Data.SQLite
 {
     internal class SQLiteAdapter : SqlAdapterAbstract
     {
-        public SQLiteAdapter(string database) : base(database)
+        public SQLiteAdapter(DbConnectionOptions options) : base(options)
         {
         }
 
-        public override string Database => AppendQuote(_database) + ".";
+        public override string Database => AppendQuote(Options.Database) + ".";
 
         public override SqlDialect SqlDialect => SqlDialect.SQLite;
 

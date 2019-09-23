@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Nm.Lib.Utils.Core.Enums;
+using Newtonsoft.Json;
+using Nm.Lib.Auth.Abstractions;
 
 namespace Nm.Module.Admin.Application.AccountService.ViewModels
 {
@@ -21,6 +22,12 @@ namespace Nm.Module.Admin.Application.AccountService.ViewModels
         public string Password { get; set; }
 
         /// <summary>
+        /// 账户类型
+        /// </summary>
+        [Required(ErrorMessage = "请选择账户类型")]
+        public AccountType AccountType { get; set; } = AccountType.Admin;
+
+        /// <summary>
         /// 平台
         /// </summary>
         public Platform Platform { get; set; }
@@ -34,5 +41,11 @@ namespace Nm.Module.Admin.Application.AccountService.ViewModels
         /// 验证码
         /// </summary>
         public string Code { get; set; }
+
+        /// <summary>
+        /// IP地址
+        /// </summary>
+        [JsonIgnore]
+        public string IP { get; set; }
     }
 }

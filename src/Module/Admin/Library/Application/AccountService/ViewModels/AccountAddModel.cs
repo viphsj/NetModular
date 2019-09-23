@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Nm.Lib.Auth.Abstractions;
 
 namespace Nm.Module.Admin.Application.AccountService.ViewModels
 {
     public class AccountAddModel
     {
+        /// <summary>
+        /// 类型
+        /// </summary>
+        public AccountType Type { get; set; }
+
         /// <summary>
         /// 用户名
         /// </summary>
@@ -32,6 +38,11 @@ namespace Nm.Module.Admin.Application.AccountService.ViewModels
         /// 邮箱
         /// </summary>
         public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否锁定角色
+        /// </summary>
+        public bool IsLockRole { get; set; }
 
         /// <summary>
         /// 绑定角色列表

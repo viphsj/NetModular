@@ -2,12 +2,12 @@
   <!--工具栏-->
   <section class="nm-list-querybar">
     <nm-form ref="normalForm" class="nm-list-querybar-normal" :model="model_" :rules="rules" :inline="true">
-      <slot/>
+      <slot />
       <el-form-item v-if="!noSearch">
-        <nm-button type="primary" @click="query" :icon="!noSearchButtonIcon?'search':''" text="查询"/>
+        <nm-button type="primary" @click="query" :icon="!noSearchButtonIcon?'search':''" text="查询" />
       </el-form-item>
       <el-form-item v-if="!noSearch">
-        <nm-button type="info" @click="reset" :icon="!noSearchButtonIcon?'refresh':''" text="重置"/>
+        <nm-button type="info" @click="reset" :icon="!noSearchButtonIcon?'refresh':''" text="重置" />
       </el-form-item>
       <el-form-item v-if="advanced_.enabled">
         <nm-button ref="showAdvnacedBtn" type="warning" @click="onAdvancedClick">
@@ -17,7 +17,7 @@
       </el-form-item>
       <!--自定义按钮插槽-->
       <el-form-item>
-        <slot name="buttons"/>
+        <slot name="buttons" />
       </el-form-item>
     </nm-form>
 
@@ -26,20 +26,20 @@
       <section ref="advancedBox" class="nm-list-querybar-advanced" v-if="advanced_.enabled" v-show="showAdvanced" :style="advancedStyle">
         <nm-box page header footer title="高级查询" icon="search" :toolbar="null">
           <template v-slot:toolbar>
-            <nm-button icon="close" @click="showAdvanced=false"/>
+            <nm-button icon="close" @click="showAdvanced=false" />
           </template>
           <!--查询条件-->
           <nm-form ref="advancedForm" :model="model_" :rules="rules" :label-width="advanced_.labelWidth" :inline="advanced_.inline">
-            <slot name="advanced"/>
+            <slot name="advanced" />
           </nm-form>
           <template v-slot:footer>
             <!--查询按钮-->
-            <nm-button type="primary" @click="query" text="查询" :icon="!noSearchButtonIcon?'search':''"/>
+            <nm-button type="primary" @click="query" text="查询" :icon="!noSearchButtonIcon?'search':''" />
             <!--重置按钮-->
-            <nm-button type="info" @click="reset" text="重置" :icon="!noSearchButtonIcon?'refresh':''"/>
+            <nm-button type="info" @click="reset" text="重置" :icon="!noSearchButtonIcon?'refresh':''" />
           </template>
         </nm-box>
-        <div ref="arrow" class="advanced-arrow"/>
+        <div ref="arrow" class="advanced-arrow" />
       </section>
     </transition>
   </section>
@@ -58,7 +58,7 @@ const defaultAdvanced = {
   inline: false
 }
 export default {
-  data () {
+  data() {
     return {
       // 是否显示高级查询
       showAdvanced: false
@@ -82,17 +82,17 @@ export default {
     noSearch: Boolean
   },
   computed: {
-    model_ () {
+    model_() {
       return this.model || {}
     },
     /** 高级查询设置 */
-    advanced_ () {
+    advanced_() {
       const ad = this.$_.merge({}, defaultAdvanced, this.advanced)
       ad.enabled = ad.enabled && !this.noSearch
       return ad
     },
     /** 高级查询框样式 */
-    advancedStyle () {
+    advancedStyle() {
       return {
         width: this.advanced_.width,
         height: this.advanced_.height
@@ -100,11 +100,12 @@ export default {
     }
   },
   methods: {
-    query () {
+    query() {
+      this.$parent.page.index = 1
       this.$parent.query()
     },
     /** 表单重置 */
-    reset () {
+    reset() {
       if (this.$refs.normalForm) {
         this.$refs.normalForm.reset()
       }
@@ -114,7 +115,7 @@ export default {
       this.$parent.reset(true)
     },
     /** 高级查询按钮点击事件 */
-    onAdvancedClick () {
+    onAdvancedClick() {
       this.showAdvanced = !this.showAdvanced
 
       if (this.showAdvanced) {
@@ -151,8 +152,13 @@ export default {
       }
     }
   },
-  mounted () {
+  mounted() {
     this.$nextTick(() => {
+      this.$refs.normalForm.$el.addEventListener('keydown', e => {
+        if (e.keyCode === 13) {
+          this.query()
+        }
+      })
       if (this.inputWidth) {
         let inputs = this.$refs.normalForm.$el.querySelectorAll('.el-input__inner')
         if (inputs) {

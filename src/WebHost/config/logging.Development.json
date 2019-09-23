@@ -1,35 +1,35 @@
 {
-  "Serilog": {
-    "MinimumLevel": {
-      "Default": "Debug",
-      "Override": {
-        "Microsoft": "Debug",
-        "System": "Debug"
-      }
-    },
-    "WriteTo": [
-      {
-        "Name": "Console",
-        "Args": {
-          "theme": "Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Code, Serilog.Sinks.Console",
-          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}"
+    "Serilog": {
+      "MinimumLevel": {
+        "Default": "Debug",
+        "Override": {
+          "Microsoft": "Debug",
+          "System": "Debug"
         }
       },
-      {
-        "Name": "File",
-        "Args": {
-          //ÎÄ¼şÂ·¾¶
-          "path": "log/log.log",
-          //ÎÄ¼ş¹ö¶¯·½Ê½
-          "rollingInterval": "Day",
-          //ÏûÏ¢Êä³ö¸ñÊ½
-          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-          //ÎÄ¼şÊıÁ¿
-          "retainedFileCountLimit": 60,
-          //Ê¹ÓÃ»º³å£¬Ìá¸ßĞ´ÈëĞ§ÂÊ
-          "buffered": false
+      "WriteTo": [
+        {
+          "Name": "Console",
+          "Args": {
+            "theme": "Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Code, Serilog.Sinks.Console",
+            "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}"
+          }
+        },
+        {
+          "Name": "File",
+          "Args": {
+            //æ–‡ä»¶è·¯å¾„
+            "path": "log/log.log",
+            //æ–‡ä»¶æ»šåŠ¨æ–¹å¼
+            "rollingInterval": "Day",
+            //æ¶ˆæ¯è¾“å‡ºæ ¼å¼
+            "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+            //æ–‡ä»¶æ•°é‡
+            "retainedFileCountLimit": 60,
+            //ä½¿ç”¨ç¼“å†²ï¼Œæé«˜å†™å…¥æ•ˆç‡
+            "buffered": false
+          }
         }
-      }
-    ]
+      ]
+    }
   }
-}

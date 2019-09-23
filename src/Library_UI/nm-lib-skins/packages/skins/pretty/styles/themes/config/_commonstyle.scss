@@ -6,20 +6,20 @@
   $menu-background-color: map-get($item, 'menu-background-color');
   $menu-color: map-get($item, 'menu-color');
   $menu-hover: map-get($item, 'menu-hover');
-  #{$prefix}-theme-#{$name} {
-    #{$prefix}-sidebar {
+  #{$prefix}theme-#{$name} {
+    #{$prefix}sidebar {
       /*********************logo-box************************/
-      #{$prefix}-logo-box {
+      #{$prefix}logo-box {
         background-color: $header-background-color !important;
         color: $header-color !important;
-        #{$prefix}-logo-text {
+        #{$prefix}logo-text {
           color: $header-color !important;
         }
       }
       /*********************menu-wapper************************/
-      #{$prefix}-menu-wapper {
+      #{$prefix}menu-wapper {
         background-color: $menu-background-color !important;
-        border-right: 3px solid $theme-tabs-item !important;
+        border-right: 3px solid $theme-color-tabs-item !important;
         .el-submenu__title {
           background-color: $menu-background-color !important;
           color: $menu-color !important;
@@ -41,8 +41,8 @@
       }
     }
     /*********************main************************/
-    #{$prefix}-main {
-      #{$prefix}-header {
+    #{$prefix}main {
+      #{$prefix}header {
         background-color: $header-background-color !important;
         color: $header-color !important;
         .nm-header-left,
@@ -57,20 +57,20 @@
           background-color: $header-background-color !important;
         }
       }
-      #{$prefix}-container-main {
+      #{$prefix}container-main {
         padding: 5px 5px 5px 5px !important;
-        background-color: $theme-back-color;
+        background-color: $theme-color-back-color;
       }
       /*********************tabs页面标签************************/
-      #{$prefix}-tabnav {
-        background-color: $theme-white-highlight !important;
-        #{$prefix}-tabnav-tabs {
+      #{$prefix}tabnav {
+        background-color: $theme-color-white-highlight !important;
+        #{$prefix}tabnav-tabs {
           padding-bottom: 1px;
           padding-left: 1px;
           border-bottom: 1px;
-          background-color: $theme-white-highlight !important;
+          background-color: $theme-color-white-highlight !important;
           .el-tabs__nav {
-            border-left: 2px solid $theme-tabs-item !important;
+            border-left: 2px solid $theme-color-tabs-item !important;
             border-right: 0px !important;
           }
           .el-tabs__item {
@@ -99,21 +99,21 @@
         }
       }
       /*********************进度条************************/
-      #{$prefix}-box-border {
+      #{$prefix}box-border {
         background-color: $header-background-color !important;
       }
     }
   }
   /*********************模态框************************/
-  &#{$prefix}-theme-#{$name} {
-    #{$prefix}-dialog {
+  &#{$prefix}theme-#{$name} {
+    #{$prefix}dialog {
       border-radius: 5px;
       .el-visible__header {
         border-radius: 5px 5px 0px 0px;
         margin-bottom: 5px;
         border-top: 5px solid $header-background-color;
-        border-bottom: 2px solid $theme-tabs-item;
-        background-color: $theme-white-highlight;
+        border-bottom: 2px solid $theme-color-tabs-item;
+        background-color: $theme-color-white-highlight;
         height: auto !important;
         button {
           font-size: 12px;
@@ -121,8 +121,8 @@
       }
       .el-visible__footer {
         border-radius: 0px 0px 5px 5px;
-        border-top: 2px solid $theme-tabs-item;
-        background-color: $theme-white-highlight;
+        border-top: 2px solid $theme-color-tabs-item;
+        background-color: $theme-color-white-highlight;
       }
     }
   }

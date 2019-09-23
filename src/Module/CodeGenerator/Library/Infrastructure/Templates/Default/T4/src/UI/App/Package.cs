@@ -28,6 +28,13 @@ namespace Nm.Module.CodeGenerator.Infrastructure.Templates.Default.T4.src.UI.App
             this.Write("{\r\n    \"name\": \"");
             
             #line 3 "D:\MyProject\NetModular\src\Module\CodeGenerator\Library\Infrastructure\Templates\Default\T4\src\UI\App\Package.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(_model.Project.Code.ToLower()));
+            
+            #line default
+            #line hidden
+            this.Write("-");
+            
+            #line 3 "D:\MyProject\NetModular\src\Module\CodeGenerator\Library\Infrastructure\Templates\Default\T4\src\UI\App\Package.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(_model.Project.WebUIDicName));
             
             #line default
@@ -85,24 +92,31 @@ namespace Nm.Module.CodeGenerator.Infrastructure.Templates.Default.T4.src.UI.App
             
             #line default
             #line hidden
+            this.Write("-lib-utils\": \"^1.0.0\",\r\n        \"");
+            
+            #line 21 "D:\MyProject\NetModular\src\Module\CodeGenerator\Library\Infrastructure\Templates\Default\T4\src\UI\App\Package.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(_prefix));
+            
+            #line default
+            #line hidden
             this.Write(@"-module-admin"": ""^1.0.0""
     },
     ""devDependencies"": {
-        ""@vue/cli-plugin-babel"": ""^3.7.0"",
-        ""@vue/cli-plugin-eslint"": ""^3.7.0"",
-        ""@vue/cli-service"": ""^3.7.0"",
+        ""@vue/cli-plugin-babel"": ""^3.11.0"",
+        ""@vue/cli-plugin-eslint"": ""^3.11.0"",
+        ""@vue/cli-service"": ""^3.11.0"",
         ""@vue/eslint-config-standard"": ""^4.0.0"",
-        ""babel-eslint"": ""^10.0.1"",
-        ""eslint"": ""^5.16.0"",
+        ""babel-eslint"": ""^10.0.3"",
+        ""eslint"": ""^6.2.2"",
         ""eslint-config-elemefe"": ""^0.3.0"",
-        ""eslint-plugin-html"": ""^5.0.5"",
+        ""eslint-plugin-html"": ""^6.0.0"",
         ""eslint-plugin-json"": ""^1.4.0"",
-        ""eslint-plugin-vue"": ""^5.2.2"",
-        ""fibers"": ""^3.1.1"",
-        ""rimraf"": ""^2.6.3"",
-        ""sass"": ""^1.20.1"",
-        ""sass-loader"": ""^7.1.0"",
-        ""uglifyjs-webpack-plugin"": ""^2.1.2"",
+        ""eslint-plugin-vue"": ""^5.2.3"",
+        ""fibers"": ""^4.0.1"",
+        ""rimraf"": ""^3.0.0"",
+        ""sass"": ""^1.22.10"",
+        ""sass-loader"": ""^7.3.1"",
+        ""uglifyjs-webpack-plugin"": ""^2.2.0"",
         ""vue-template-compiler"": ""^2.6.10""
     }
 }

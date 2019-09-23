@@ -3,6 +3,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Nm.Lib.Module.Abstractions;
+using Nm.Lib.Module.AspNetCore;
 using Nm.Lib.Validation.Abstractions;
 
 namespace Nm.Lib.Validation.FluentValidation
@@ -23,9 +24,19 @@ namespace Nm.Lib.Validation.FluentValidation
             builder.AddFluentValidation(fv =>
             {
                 var modules = services.BuildServiceProvider().GetService<IModuleCollection>();
-                foreach (var moduleInfo in modules)
+                foreach (var module in modules)
                 {
-                    fv.RegisterValidatorsFromAssembly(moduleInfo.AssembliesInfo.Application);
+                    if (module.AssemblyDescriptor != null && module.AssemblyDescriptor is ModuleAssemblyDescriptor descriptor)
+                    {
+                        if (descriptor.Web != null)
+                        {
+                            fv.RegisterValidatorsFromAssembly(descriptor.Web);
+                        }
+                        else
+                        {
+                            fv.RegisterValidatorsFromAssembly(descriptor.Api);
+                        }
+                    }
                 }
             });
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using Nm.Lib.Auth.Abstractions;
 using Nm.Lib.Data.Abstractions.Attributes;
 using Nm.Lib.Data.Core.Entities.Extend;
 
@@ -10,6 +11,11 @@ namespace Nm.Module.Admin.Domain.Account
     [Table("Account")]
     public partial class AccountEntity : EntityBaseWithSoftDelete
     {
+        /// <summary>
+        /// 类型
+        /// </summary>
+        public AccountType Type { get; set; }
+
         /// <summary>
         /// 用户名
         /// </summary>
@@ -28,12 +34,12 @@ namespace Nm.Module.Admin.Domain.Account
         /// <summary>
         /// 手机号
         /// </summary>
-        public string Phone { get; set; } = String.Empty;
+        public string Phone { get; set; } = string.Empty;
 
         /// <summary>
         /// 邮箱
         /// </summary>
-        public string Email { get; set; } = String.Empty;
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// 最后登录时间
@@ -43,12 +49,17 @@ namespace Nm.Module.Admin.Domain.Account
         /// <summary>
         /// 最后登录IP
         /// </summary>
-        public string LoginIP { get; set; } = String.Empty;
+        public string LoginIP { get; set; } = string.Empty;
 
         /// <summary>
         /// 状态
         /// </summary>
         public AccountStatus Status { get; set; }
+
+        /// <summary>
+        /// 是否锁定，锁定后不允许在账户管理中修改
+        /// </summary>
+        public bool IsLock { get; set; }
 
         /// <summary>
         /// 注销时间

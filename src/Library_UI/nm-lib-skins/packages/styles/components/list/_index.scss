@@ -1,6 +1,6 @@
 @import './variables';
 
-#{$prefix}-list {
+#{$prefix}list {
     box-shadow: $list-box-shadow;
     @include flex-column();
     box-sizing: border-box;
@@ -8,9 +8,7 @@
     overflow: hidden;
     height: 100%;
     background-color: #fff;
-    border-width: 0 1px;
-    border-style: solid;
-    border-color: $border-color2;
+    border: 1px solid $border-color2;
 
     //头部
     &-header {
@@ -21,7 +19,6 @@
         flex-shrink: 0;
         @include vertical-center($list-header-height);
         box-sizing: border-box;
-        border-top: 1px solid $border-color2;
         border-bottom: 1px solid $border-color3;
 
         //工具栏
@@ -30,7 +27,7 @@
             flex-shrink: 0;
             margin-left: 15px;
 
-            #{$prefix}-button {
+            #{$prefix}button {
                 margin-left: 0;
                 padding: 0;
                 border: none;
@@ -55,7 +52,7 @@
         &-button {
             padding-left: 10px;
 
-            #{$prefix}-button {
+            #{$prefix}button {
                 padding: 7px 10px;
             }
         }
@@ -79,7 +76,7 @@
 
     &-querybar {
 
-        >#{$prefix}-form {
+        >#{$prefix}form {
             padding-bottom: 0 !important;
 
             >.el-form-item {
@@ -92,6 +89,10 @@
                 padding: 0 !important;
                 width: auto !important;
             }
+        }
+
+        .el-dropdown+.el-button {
+            margin-left: 10px;
         }
     }
 
@@ -107,7 +108,7 @@
             padding-top: 18px !important;
             padding-bottom: 0 !important;
 
-            #{$prefix}-form {
+            #{$prefix}form {
                 padding: 0 !important;
             }
         }
@@ -154,6 +155,11 @@
                 font-weight: 700;
                 color: $list-table-header-color;
             }
+
+            .el-table {
+                border-left: 0;
+                border-right: 0;
+            }
         }
     }
 
@@ -179,7 +185,7 @@
         }
 
         &.reverse {
-            #{$prefix}-list-footer-left {
+            #{$prefix}list-footer-left {
                 order: 1;
                 text-align: right;
             }
@@ -219,7 +225,7 @@
 
     //操作列
     &-operation {
-        .el-button--text {
+        .el-button--text:not(.is-disabled) {
             &:hover {
                 color: $color-warning;
             }
@@ -248,14 +254,14 @@
     }
 
     &-small {
-        #{$prefix}-list-toolbar {
+        #{$prefix}list-toolbar {
             height: $list-small-toolbar-height;
             line-height: $list-small-toolbar-height - 2.2;
         }
     }
 
     &-mini {
-        #{$prefix}-list-toolbar {
+        #{$prefix}list-toolbar {
             height: $list-mini-toolbar-height;
             line-height: $list-mini-toolbar-height - 2.2;
         }

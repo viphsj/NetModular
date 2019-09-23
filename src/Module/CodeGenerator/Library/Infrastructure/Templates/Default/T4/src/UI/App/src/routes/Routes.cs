@@ -9,8 +9,6 @@
 // ------------------------------------------------------------------------------
 namespace Nm.Module.CodeGenerator.Infrastructure.Templates.Default.T4.src.UI.App.src.routes
 {
-    using System;
-    
     /// <summary>
     /// Class to produce the template output
     /// </summary>
@@ -25,40 +23,16 @@ namespace Nm.Module.CodeGenerator.Infrastructure.Templates.Default.T4.src.UI.App
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write(@"import module from '../module'
-/** 路由数组 */
-let routes = []
-
-/** 面包屑 */
-const breadcrumb = [
-  {
-    title: '首页',
-    path: '/'
-  },
-  {
-    title: module.name
-  }
-]
-
-const requireComponent = require.context('../views', true, /\page.js$/)
-requireComponent.keys().map(fileName => {
-  const route = requireComponent(fileName).route
-  routes.push({
-    path: route.page.path,
-    name: route.page.name,
-    component: route.component,
-    meta: {
-      title: route.page.title,
-      frameIn: route.page.frameIn,
-      cache: route.page.cache,
-      breadcrumb,
-      buttons: route.page.buttons
-    }
-  })
-})
-
-export default routes
-");
+            this.Write("import { loadRoutes } from \'");
+            
+            #line 2 "D:\MyProject\NetModular\src\Module\CodeGenerator\Library\Infrastructure\Templates\Default\T4\src\UI\App\src\routes\Routes.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(_prefix));
+            
+            #line default
+            #line hidden
+            this.Write("-lib-utils\'\r\nconst requireComponent = require.context(\'../views\', true, /\\page.js" +
+                    "$/)\r\nexport default loadRoutes(\r\n  requireComponent.keys().map(fileName => requi" +
+                    "reComponent(fileName).route)\r\n)");
             return this.GenerationEnvironment.ToString();
         }
     }

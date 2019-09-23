@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Nm.Lib.Data.Abstractions;
@@ -10,23 +11,35 @@ using Nm.Lib.Data.Abstractions.SqlQueryable;
 using Nm.Lib.Data.Abstractions.SqlQueryable.GroupByQueryable;
 using Nm.Lib.Data.Core.SqlQueryable.GroupByQueryable;
 using Nm.Lib.Data.Core.SqlQueryable.Internal;
+using Nm.Lib.Utils.Core.Extensions;
 
 namespace Nm.Lib.Data.Core.SqlQueryable
 {
     internal class NetSqlQueryable<TEntity> : NetSqlQueryableAbstract, INetSqlQueryable<TEntity> where TEntity : IEntity, new()
     {
-        public NetSqlQueryable(IDbSet<TEntity> dbSet, Expression<Func<TEntity, bool>> whereExpression) : base(dbSet, new QueryBody(dbSet.DbContext.Options.SqlAdapter))
+        public NetSqlQueryable(IDbSet<TEntity> dbSet, Expression<Func<TEntity, bool>> whereExpression, string tableName = null) : base(dbSet, new QueryBody(dbSet.DbContext.Options.SqlAdapter))
         {
             QueryBody.JoinDescriptors.Add(new QueryJoinDescriptor
             {
                 Type = JoinType.UnKnown,
                 Alias = "T1",
                 EntityDescriptor = EntityDescriptorCollection.Get<TEntity>(),
+                TableName = tableName.NotNull() ? tableName : Db.EntityDescriptor.TableName
             });
             QueryBody.WhereDelegateType = typeof(Func<,>).MakeGenericType(typeof(TEntity), typeof(bool));
 
             Where(whereExpression);
         }
+
+        #region ==UseTran==
+
+        public INetSqlQueryable<TEntity> UseTran(IDbTransaction transaction)
+        {
+            QueryBody.UseTran(transaction);
+            return this;
+        }
+
+        #endregion
 
         #region ==Sort==
 
@@ -74,11 +87,101 @@ namespace Nm.Lib.Data.Core.SqlQueryable
             return this;
         }
 
-        public INetSqlQueryable<TEntity> WhereIf(bool ifCondition, Expression<Func<TEntity, bool>> expression)
+        public INetSqlQueryable<TEntity> WhereIf(bool condition, Expression<Func<TEntity, bool>> expression)
         {
-            if (ifCondition)
+            if (condition)
                 Where(expression);
 
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereIf(bool condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(string condition, Expression<Func<TEntity, bool>> expression)
+        {
+            if (condition.NotNull())
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(string condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition.NotNull() ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(Guid? condition, Expression<Func<TEntity, bool>> expression)
+        {
+            if (condition != null && condition.Value.NotEmpty())
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(Guid? condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition != null && condition.Value.NotEmpty() ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(int? condition, Expression<Func<TEntity, bool>> expression)
+        {
+            if (condition != null)
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(int? condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition != null ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(long? condition, Expression<Func<TEntity, bool>> expression)
+        {
+            if (condition != null)
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(long? condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition != null ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(DateTime? condition, Expression<Func<TEntity, bool>> expression)
+        {
+            if (condition != null)
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotNull(DateTime? condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition != null ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotEmpty(Guid condition, Expression<Func<TEntity, bool>> expression)
+        {
+            if (condition.NotEmpty())
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity> WhereNotEmpty(Guid condition, Expression<Func<TEntity, bool>> ifExpression, Expression<Func<TEntity, bool>> elseExpression)
+        {
+            Where(condition.NotEmpty() ? ifExpression : elseExpression);
             return this;
         }
 
@@ -106,19 +209,19 @@ namespace Nm.Lib.Data.Core.SqlQueryable
 
         #region ==Join==
 
-        public INetSqlQueryable<TEntity, TEntity2> LeftJoin<TEntity2>(Expression<Func<TEntity, TEntity2, bool>> onExpression) where TEntity2 : IEntity, new()
+        public INetSqlQueryable<TEntity, TEntity2> LeftJoin<TEntity2>(Expression<Func<TEntity, TEntity2, bool>> onExpression, string tableName = null) where TEntity2 : IEntity, new()
         {
-            return new NetSqlQueryable<TEntity, TEntity2>(Db, QueryBody, onExpression);
+            return new NetSqlQueryable<TEntity, TEntity2>(Db, QueryBody, onExpression, JoinType.Left, tableName);
         }
 
-        public INetSqlQueryable<TEntity, TEntity2> InnerJoin<TEntity2>(Expression<Func<TEntity, TEntity2, bool>> onExpression) where TEntity2 : IEntity, new()
+        public INetSqlQueryable<TEntity, TEntity2> InnerJoin<TEntity2>(Expression<Func<TEntity, TEntity2, bool>> onExpression, string tableName = null) where TEntity2 : IEntity, new()
         {
-            return new NetSqlQueryable<TEntity, TEntity2>(Db, QueryBody, onExpression, JoinType.Inner);
+            return new NetSqlQueryable<TEntity, TEntity2>(Db, QueryBody, onExpression, JoinType.Inner, tableName);
         }
 
-        public INetSqlQueryable<TEntity, TEntity2> RightJoin<TEntity2>(Expression<Func<TEntity, TEntity2, bool>> onExpression) where TEntity2 : IEntity, new()
+        public INetSqlQueryable<TEntity, TEntity2> RightJoin<TEntity2>(Expression<Func<TEntity, TEntity2, bool>> onExpression, string tableName = null) where TEntity2 : IEntity, new()
         {
-            return new NetSqlQueryable<TEntity, TEntity2>(Db, QueryBody, onExpression, JoinType.Right);
+            return new NetSqlQueryable<TEntity, TEntity2>(Db, QueryBody, onExpression, JoinType.Right, tableName);
         }
 
         #endregion
@@ -139,16 +242,16 @@ namespace Nm.Lib.Data.Core.SqlQueryable
 
         public int DeleteWithAffectedNum()
         {
-            var sql = QueryBuilder.DeleteSqlBuild(Db.EntityDescriptor.TableName, out QueryParameters parameters);
+            var sql = QueryBuilder.DeleteSqlBuild(out IQueryParameters parameters);
 
-            return Db.Execute(sql, parameters.Parse());
+            return Db.Execute(sql, parameters.Parse(), QueryBody.Transaction);
         }
 
         public Task<int> DeleteWithAffectedNumAsync()
         {
-            var sql = QueryBuilder.DeleteSqlBuild(Db.EntityDescriptor.TableName, out QueryParameters parameters);
+            var sql = QueryBuilder.DeleteSqlBuild(out IQueryParameters parameters);
 
-            return Db.ExecuteAsync(sql, parameters.Parse());
+            return Db.ExecuteAsync(sql, parameters.Parse(), QueryBody.Transaction);
         }
 
         #endregion
@@ -169,16 +272,16 @@ namespace Nm.Lib.Data.Core.SqlQueryable
 
         public int SoftDeleteWithAffectedNum()
         {
-            var sql = QueryBuilder.SoftDeleteSqlBuild(Db.EntityDescriptor.TableName, out QueryParameters parameters);
+            var sql = QueryBuilder.SoftDeleteSqlBuild(out IQueryParameters parameters);
 
-            return Db.Execute(sql, parameters.Parse());
+            return Db.Execute(sql, parameters.Parse(), QueryBody.Transaction);
         }
 
         public Task<int> SoftDeleteWithAffectedNumAsync()
         {
-            var sql = QueryBuilder.SoftDeleteSqlBuild(Db.EntityDescriptor.TableName, out QueryParameters parameters);
+            var sql = QueryBuilder.SoftDeleteSqlBuild(out IQueryParameters parameters);
 
-            return Db.ExecuteAsync(sql, parameters.Parse());
+            return Db.ExecuteAsync(sql, parameters.Parse(), QueryBody.Transaction);
         }
 
         #endregion
@@ -201,18 +304,18 @@ namespace Nm.Lib.Data.Core.SqlQueryable
         {
             QueryBody.Update = expression;
             QueryBody.SetModifiedBy = setModifiedBy;
-            var sql = QueryBuilder.UpdateSqlBuild(Db.EntityDescriptor.TableName, out QueryParameters parameters);
+            var sql = QueryBuilder.UpdateSqlBuild(out IQueryParameters parameters);
 
-            return Db.Execute(sql, parameters.Parse());
+            return Db.Execute(sql, parameters.Parse(), QueryBody.Transaction);
         }
 
         public Task<int> UpdateWithAffectedNumAsync(Expression<Func<TEntity, TEntity>> expression, bool setModifiedBy = true)
         {
             QueryBody.Update = expression;
             QueryBody.SetModifiedBy = setModifiedBy;
-            var sql = QueryBuilder.UpdateSqlBuild(Db.EntityDescriptor.TableName, out QueryParameters parameters);
+            var sql = QueryBuilder.UpdateSqlBuild(out IQueryParameters parameters);
 
-            return Db.ExecuteAsync(sql, parameters.Parse());
+            return Db.ExecuteAsync(sql, parameters.Parse(), QueryBody.Transaction);
         }
 
         #endregion
@@ -244,6 +347,10 @@ namespace Nm.Lib.Data.Core.SqlQueryable
             return base.MinAsync<TResult>(expression);
         }
 
+        #endregion
+
+        #region ==Sum==
+
         public TResult Sum<TResult>(Expression<Func<TEntity, TResult>> expression)
         {
             return base.Sum<TResult>(expression);
@@ -253,6 +360,10 @@ namespace Nm.Lib.Data.Core.SqlQueryable
         {
             return base.SumAsync<TResult>(expression);
         }
+
+        #endregion
+
+        #region ==Avg==
 
         public TResult Avg<TResult>(Expression<Func<TEntity, TResult>> expression)
         {
@@ -313,6 +424,16 @@ namespace Nm.Lib.Data.Core.SqlQueryable
         public new Task<TEntity> FirstAsync()
         {
             return FirstAsync<TEntity>();
+        }
+
+        #endregion
+
+        #region ==IncludeDeleted==
+
+        public INetSqlQueryable<TEntity> IncludeDeleted()
+        {
+            QueryBody.FilterDeleted = false;
+            return this;
         }
 
         #endregion

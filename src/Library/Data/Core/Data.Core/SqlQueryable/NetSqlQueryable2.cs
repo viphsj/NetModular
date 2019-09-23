@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Nm.Lib.Data.Abstractions;
@@ -8,9 +9,10 @@ using Nm.Lib.Data.Abstractions.Enums;
 using Nm.Lib.Data.Abstractions.Pagination;
 using Nm.Lib.Data.Abstractions.SqlQueryable;
 using Nm.Lib.Data.Abstractions.SqlQueryable.GroupByQueryable;
-using Nm.Lib.Data.Core.Internal;
 using Nm.Lib.Data.Core.SqlQueryable.GroupByQueryable;
 using Nm.Lib.Data.Core.SqlQueryable.Internal;
+using Nm.Lib.Utils.Core;
+using Nm.Lib.Utils.Core.Extensions;
 
 namespace Nm.Lib.Data.Core.SqlQueryable
 {
@@ -18,21 +20,32 @@ namespace Nm.Lib.Data.Core.SqlQueryable
         where TEntity : IEntity, new()
         where TEntity2 : IEntity, new()
     {
-        public NetSqlQueryable(IDbSet dbSet, QueryBody queryBody, Expression<Func<TEntity, TEntity2, bool>> onExpression, JoinType joinType = JoinType.Left)
+        public NetSqlQueryable(IDbSet dbSet, QueryBody queryBody, Expression<Func<TEntity, TEntity2, bool>> onExpression, JoinType joinType = JoinType.Left, string tableName = null)
             : base(dbSet, queryBody)
         {
             Check.NotNull(onExpression, nameof(onExpression), "请输入连接条件");
-
-            QueryBody.JoinDescriptors.Add(new QueryJoinDescriptor
+            var t2 = new QueryJoinDescriptor
             {
                 Type = joinType,
                 Alias = "T2",
                 EntityDescriptor = EntityDescriptorCollection.Get<TEntity2>(),
                 On = onExpression
-            });
+            };
+            t2.TableName = tableName.NotNull() ? tableName : t2.EntityDescriptor.TableName;
+            QueryBody.JoinDescriptors.Add(t2);
 
             QueryBody.WhereDelegateType = typeof(Func<,,>).MakeGenericType(typeof(TEntity), typeof(TEntity2), typeof(bool));
         }
+
+        #region ==UseTran==
+
+        public INetSqlQueryable<TEntity, TEntity2> UseTran(IDbTransaction transaction)
+        {
+            QueryBody.UseTran(transaction);
+            return this;
+        }
+
+        #endregion
 
         public INetSqlQueryable<TEntity, TEntity2> OrderBy(string colName)
         {
@@ -74,11 +87,102 @@ namespace Nm.Lib.Data.Core.SqlQueryable
             return this;
         }
 
-        public INetSqlQueryable<TEntity, TEntity2> WhereIf(bool ifCondition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        public INetSqlQueryable<TEntity, TEntity2> WhereIf(bool condition, Expression<Func<TEntity, TEntity2, bool>> expression)
         {
-            if (ifCondition)
+            if (condition)
                 Where(expression);
 
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereIf(bool condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition ? ifExpression : elseExpression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(string condition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        {
+            if (condition.NotNull())
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(string condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition.NotNull() ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(Guid? condition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        {
+            if (condition != null && condition.Value.NotEmpty())
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(Guid? condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition != null && condition.Value.NotEmpty() ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(int? condition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        {
+            if (condition != null)
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(int? condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition != null ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(long? condition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        {
+            if (condition != null)
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(long? condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition != null ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(DateTime? condition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        {
+            if (condition != null)
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotNull(DateTime? condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition != null ? ifExpression : elseExpression);
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotEmpty(Guid condition, Expression<Func<TEntity, TEntity2, bool>> expression)
+        {
+            if (condition.NotEmpty())
+                Where(expression);
+
+            return this;
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> WhereNotEmpty(Guid condition, Expression<Func<TEntity, TEntity2, bool>> ifExpression, Expression<Func<TEntity, TEntity2, bool>> elseExpression)
+        {
+            Where(condition.NotEmpty() ? ifExpression : elseExpression);
             return this;
         }
 
@@ -94,19 +198,19 @@ namespace Nm.Lib.Data.Core.SqlQueryable
             return this;
         }
 
-        public INetSqlQueryable<TEntity, TEntity2, TEntity3> LeftJoin<TEntity3>(Expression<Func<TEntity, TEntity2, TEntity3, bool>> onExpression) where TEntity3 : IEntity, new()
+        public INetSqlQueryable<TEntity, TEntity2, TEntity3> LeftJoin<TEntity3>(Expression<Func<TEntity, TEntity2, TEntity3, bool>> onExpression, string tableName = null) where TEntity3 : IEntity, new()
         {
-            return new NetSqlQueryable<TEntity, TEntity2, TEntity3>(Db, QueryBody, onExpression);
+            return new NetSqlQueryable<TEntity, TEntity2, TEntity3>(Db, QueryBody, onExpression, JoinType.Left, tableName);
         }
 
-        public INetSqlQueryable<TEntity, TEntity2, TEntity3> InnerJoin<TEntity3>(Expression<Func<TEntity, TEntity2, TEntity3, bool>> onExpression) where TEntity3 : IEntity, new()
+        public INetSqlQueryable<TEntity, TEntity2, TEntity3> InnerJoin<TEntity3>(Expression<Func<TEntity, TEntity2, TEntity3, bool>> onExpression, string tableName = null) where TEntity3 : IEntity, new()
         {
-            return new NetSqlQueryable<TEntity, TEntity2, TEntity3>(Db, QueryBody, onExpression, JoinType.Inner);
+            return new NetSqlQueryable<TEntity, TEntity2, TEntity3>(Db, QueryBody, onExpression, JoinType.Inner, tableName);
         }
 
-        public INetSqlQueryable<TEntity, TEntity2, TEntity3> RightJoin<TEntity3>(Expression<Func<TEntity, TEntity2, TEntity3, bool>> onExpression) where TEntity3 : IEntity, new()
+        public INetSqlQueryable<TEntity, TEntity2, TEntity3> RightJoin<TEntity3>(Expression<Func<TEntity, TEntity2, TEntity3, bool>> onExpression, string tableName = null) where TEntity3 : IEntity, new()
         {
-            return new NetSqlQueryable<TEntity, TEntity2, TEntity3>(Db, QueryBody, onExpression, JoinType.Right);
+            return new NetSqlQueryable<TEntity, TEntity2, TEntity3>(Db, QueryBody, onExpression, JoinType.Right, tableName);
         }
 
         public TResult Max<TResult>(Expression<Func<TEntity, TEntity2, TResult>> expression)
@@ -182,6 +286,12 @@ namespace Nm.Lib.Data.Core.SqlQueryable
         public IGroupByQueryable2<TResult, TEntity, TEntity2> GroupBy<TResult>(Expression<Func<TEntity, TEntity2, TResult>> expression)
         {
             return new GroupByQueryable2<TResult, TEntity, TEntity2>(Db, QueryBody, QueryBuilder, expression);
+        }
+
+        public INetSqlQueryable<TEntity, TEntity2> IncludeDeleted()
+        {
+            QueryBody.FilterDeleted = false;
+            return this;
         }
     }
 }

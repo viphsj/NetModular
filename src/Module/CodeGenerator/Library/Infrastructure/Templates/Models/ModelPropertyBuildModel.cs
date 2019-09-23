@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Nm.Module.CodeGenerator.Domain.ModelProperty;
 using Nm.Module.CodeGenerator.Domain.Property;
 
@@ -29,12 +28,7 @@ namespace Nm.Module.CodeGenerator.Infrastructure.Templates.Models
         /// 可空
         /// </summary>
         public bool Nullable { get; set; }
-
-        /// <summary>
-        /// 关联枚举
-        /// </summary>
-        public Guid EnumId { get; set; }
-
+        
         /// <summary>
         /// 备注
         /// </summary>

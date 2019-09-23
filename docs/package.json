@@ -1,0 +1,18 @@
+{
+  "name": "netmodular-docs",
+  "version": "1.0.0",
+  "description": "NetModular文档",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "vuepress dev ./src",
+    "build": "vuepress build ./src"
+  },
+  "author": "Oldli",
+  "license": "ISC",
+  "devDependencies": {
+    "node-sass": "^4.12.0",
+    "sass-loader": "^7.2.0",
+    "vuepress": "^1.0.3"
+  }
+}

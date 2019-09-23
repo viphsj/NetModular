@@ -1,9 +1,15 @@
-﻿using Nm.Lib.Data.Query;
+﻿using Nm.Lib.Auth.Abstractions;
+using Nm.Lib.Data.Query;
 
 namespace Nm.Module.Admin.Domain.Account.Models
 {
     public class AccountQueryModel : QueryModel
     {
+        /// <summary>
+        /// 账户类型
+        /// </summary>
+        public AccountType? Type { get; set; }
+
         /// <summary>
         /// 用户名
         /// </summary>

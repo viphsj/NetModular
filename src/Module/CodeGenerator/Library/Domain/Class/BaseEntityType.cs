@@ -9,29 +9,37 @@ namespace Nm.Module.CodeGenerator.Domain.Class
     {
         [Description("IEntity")]
         Normal,
-        [Description("Entity<Int>")]
+        [Description("Entity<int>")]
         EntityInt,
-        [Description("Entity<Long>")]
+        [Description("Entity<long>")]
         EntityLong,
         [Description("Entity<Guid>")]
         EntityGuid,
-        [Description("EntityBase<Int>")]
+        [Description("Entity<String>")]
+        EntityString,
+        [Description("EntityBase<int>")]
         EntityBaseInt,
-        [Description("EntityBase<Long>")]
+        [Description("EntityBase<long>")]
         EntityBaseLong,
         [Description("EntityBase<Guid>")]
         EntityBaseGuid,
-        [Description("EntityWithSoftDelete<Int>")]
+        [Description("EntityBase<String>")]
+        EntityBaseString,
+        [Description("EntityWithSoftDelete<int>")]
         EntityWithSoftDeleteInt,
-        [Description("EntityWithSoftDelete<Long>")]
+        [Description("EntityWithSoftDelete<long>")]
         EntityWithSoftDeleteLong,
         [Description("EntityWithSoftDelete<Guid>")]
         EntityWithSoftDeleteGuid,
-        [Description("EntityBaseWithSoftDelete<Int>")]
+        [Description("EntityWithSoftDelete<String>")]
+        EntityWithSoftDeleteString,
+        [Description("EntityBaseWithSoftDelete<int>")]
         EntityBaseWithSoftDeleteInt,
-        [Description("EntityBaseWithSoftDelete<Long>")]
+        [Description("EntityBaseWithSoftDelete<long>")]
         EntityBaseWithSoftDeleteLong,
         [Description("EntityBaseWithSoftDelete<Guid>")]
-        EntityBaseWithSoftDeleteGuid
+        EntityBaseWithSoftDeleteGuid,
+        [Description("EntityBaseWithSoftDelete<String>")]
+        EntityBaseWithSoftDeleteString
     }
 }

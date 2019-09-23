@@ -4,10 +4,12 @@
 @import './mixins';
 //动画
 @import './animation/index';
-//颜色
-@import './color';
+//格式化
+@import './helper';
 //覆盖element样式
 @import './element';
+//进度条
+@import './nprogress';
 
 /*********************组件 Begin************************/
 
@@ -15,6 +17,8 @@
 @import './components/box/index';
 //盒子行
 @import './components/box-row/index';
+//小盒子
+@import './components/box-small/index';
 //按钮
 @import './components/button/index';
 //Checkbox
@@ -33,16 +37,18 @@
 @import './components/drag-sort/index';
 //拖拽排序对话框
 @import './components/drag-sort-dialog/index';
-//分割线
-@import './components/divider/index';
 //抽屉
 @import './components/drawer/index';
+//flex
+@import './components/flex/index';
 //表单
 @import './components/form/index';
 //对话框表单
 @import './components/form-dialog/index';
 //图标选择器
 @import './components/icon-picker/index';
+//标签
+@import './components/label/index';
 //列表
 @import './components/list/index';
 //列表框
@@ -55,6 +61,10 @@
 @import './components/split/index';
 //标签导航
 @import './components/tabnav/index';
+//标签页
+@import './components/tabs/index';
+//文本
+@import './components/txt/index';
 //工具栏
 @import './components/toolbar/index';
 //多文件上传
@@ -65,10 +75,7 @@
 @import './components/upload-dialog/index';
 
 /*********************组件 End************************/
-/*********************指令 Begin**********************/
-@import './directive/resizable/index';
-@import './directive/drop/index';
-/*********************指令 End************************/
+
 /*********************皮肤 Begin************************/
 //pretty
 @import '../skins/pretty/styles/index';
